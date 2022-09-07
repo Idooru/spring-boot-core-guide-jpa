@@ -2,12 +2,15 @@ package com.example.springboot.jpa.data.dao;
 
 import com.example.springboot.jpa.data.entity.Product;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Optional;
+
 public interface ProductDAO {
-    Product insertProduct(Product product);
+    Optional<Product> insertProduct(Product product);
 
-    Product selectProduct(Long number);
+    Optional<Product> selectProduct(Long number) throws EntityNotFoundException;
 
-    Product updateProductName(Long number, String name) throws Exception;
+    Optional<Product> updateProductName(Long number, String name);
 
-    void deleteProduct(Long number) throws Exception;
+    Optional<Boolean> deleteProduct(Long number);
 }

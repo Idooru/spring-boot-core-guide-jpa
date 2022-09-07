@@ -7,10 +7,15 @@ import com.example.springboot.jpa.data.entity.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Service
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDAO productDAO;
+    private Product product;
 
     @Autowired
     ProductServiceImpl(ProductDAO productDAO) {
@@ -18,58 +23,86 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponseDto getProduct(Long number) {
-        Product product = productDAO.selectProduct(number);
-        ProductResponseDto productResponseDto = new ProductResponseDto();
+    public Optional<ProductResponseDto> getProduct(Long number) {
+        try {
+            Optional<Product> selectedProduct = productDAO.selectProduct(number);
 
-        productResponseDto.setNumber(product.getNumber());
-        productResponseDto.setName(product.getName());
-        productResponseDto.setPrice(product.getPrice());
-        productResponseDto.setStock(product.getStock());
+            if (selectedProduct.isEmpty()) {
+                throw new EntityNotFoundException();
+            }
 
-        return productResponseDto;
+            selectedProduct.ifPresent(value -> product = value);
+
+            return this.createProductResponseDto();
+        } catch (EntityNotFoundException err) {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public ProductResponseDto saveProduct(ProductDto productDto) {
+    public Optional<ProductResponseDto> saveProduct(ProductDto productDto) {
         Product product = new Product();
 
         product.setName(productDto.getName());
         product.setPrice(productDto.getPrice());
         product.setStock(productDto.getStock());
+        product.setCreatedAt(LocalDateTime.now());
 
-        Product savedProduct = productDAO.insertProduct(product);
+        Optional<Product> insertedProduct = productDAO.insertProduct(product);
+        insertedProduct.ifPresent(value -> this.product = value);
+
+        return this.createProductResponseDto();
+    }
+
+    @Override
+    public Optional<ProductResponseDto> changeProductName(Long number, String name) {
+        try {
+            Optional<Product> selectedProduct = productDAO.selectProduct(number);
+
+            if (selectedProduct.isEmpty()) {
+                throw new EntityNotFoundException();
+            }
+
+            selectedProduct.ifPresent(value -> this.product = value);
+
+        } catch (EntityNotFoundException err) {
+            return Optional.empty();
+        }
+
+
+        Optional<Product> changedProduct = productDAO.updateProductName(number, name);
+        changedProduct.ifPresent(value -> this.product = value);
+
+        return this.createProductResponseDto();
+    }
+
+    @Override
+    public Optional<Boolean> deleteProduct(Long number) {
+        try {
+            Optional<Product> selectedProduct = productDAO.selectProduct(number);
+
+            if (selectedProduct.isEmpty()) {
+                throw new EntityNotFoundException();
+            }
+
+            selectedProduct.ifPresent(value -> this.product = value);
+
+            return productDAO.deleteProduct(number);
+        } catch (EntityNotFoundException err) {
+            return Optional.empty();
+        }
+
+
+    }
+
+    public Optional<ProductResponseDto> createProductResponseDto() {
         ProductResponseDto productResponseDto = new ProductResponseDto();
 
-        productResponseDto.setNumber(savedProduct.getNumber());
-        productResponseDto.setName(savedProduct.getName());
-        productResponseDto.setPrice(savedProduct.getPrice());
-        productResponseDto.setStock(savedProduct.getStock());
+        productResponseDto.setNumber(this.product.getNumber());
+        productResponseDto.setName(this.product.getName());
+        productResponseDto.setPrice(this.product.getPrice());
+        productResponseDto.setStock(this.product.getStock());
 
-        return productResponseDto;
-    }
-
-    @Override
-    public ProductResponseDto changeProductName(Long number, String name) throws Exception {
-        Product selectProduct = productDAO.selectProduct(number);
-
-        if (selectProduct.getNumber() == number) {
-            ProductResponseDto productResponseDto = new ProductResponseDto();
-            Product changedProduct = productDAO.updateProductName(number, name);
-
-            productResponseDto.setNumber(changedProduct.getNumber());
-            productResponseDto.setName(changedProduct.getName());
-            productResponseDto.setPrice(changedProduct.getPrice());
-            productResponseDto.setStock(changedProduct.getStock());
-
-            return productResponseDto;
-        } else {
-            throw new Exception("해당 상품을 찾을 수 없습니다.");
-        }
-    }
-
-    @Override
-    public void deleteProduct(Long number) throws Exception {
-        productDAO.deleteProduct(number);
+        return Optional.of(productResponseDto);
     }
 }
