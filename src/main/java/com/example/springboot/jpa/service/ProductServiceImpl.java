@@ -1,6 +1,6 @@
 package com.example.springboot.jpa.service;
 
-import com.example.springboot.jpa.data.dao.ProductDAO;
+import com.example.springboot.jpa.data.dao.ProductDAOImpl;
 import com.example.springboot.jpa.data.dto.ProductDto;
 import com.example.springboot.jpa.data.dto.ProductResponseDto;
 import com.example.springboot.jpa.data.entity.Product;
@@ -14,29 +14,25 @@ import java.util.Optional;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-    private final ProductDAO productDAO;
+    private final ProductDAOImpl productDAO;
     private Product product;
 
     @Autowired
-    ProductServiceImpl(ProductDAO productDAO) {
+    ProductServiceImpl(ProductDAOImpl productDAO) {
         this.productDAO = productDAO;
     }
 
     @Override
     public Optional<ProductResponseDto> getProduct(Long number) {
-        try {
-            Optional<Product> selectedProduct = productDAO.selectProduct(number);
+        Optional<Product> selectedProduct = productDAO.selectProduct(number);
 
-            if (selectedProduct.isEmpty()) {
-                throw new EntityNotFoundException();
-            }
-
-            selectedProduct.ifPresent(value -> product = value);
-
-            return this.createProductResponseDto();
-        } catch (EntityNotFoundException err) {
-            return Optional.empty();
+        if (selectedProduct.isEmpty()) {
+            throw new EntityNotFoundException();
         }
+
+        selectedProduct.ifPresent(value -> product = value);
+
+        return this.createProductResponseDto();
     }
 
     @Override
@@ -56,19 +52,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Optional<ProductResponseDto> changeProductName(Long number, String name) {
-        try {
-            Optional<Product> selectedProduct = productDAO.selectProduct(number);
+        Optional<Product> selectedProduct = productDAO.selectProduct(number);
 
-            if (selectedProduct.isEmpty()) {
-                throw new EntityNotFoundException();
-            }
-
-            selectedProduct.ifPresent(value -> this.product = value);
-
-        } catch (EntityNotFoundException err) {
-            return Optional.empty();
+        if (selectedProduct.isEmpty()) {
+            throw new EntityNotFoundException();
         }
 
+        selectedProduct.ifPresent(value -> this.product = value);
 
         Optional<Product> changedProduct = productDAO.updateProductName(number, name);
         changedProduct.ifPresent(value -> this.product = value);
@@ -78,21 +68,15 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Optional<Boolean> deleteProduct(Long number) {
-        try {
-            Optional<Product> selectedProduct = productDAO.selectProduct(number);
+        Optional<Product> selectedProduct = productDAO.selectProduct(number);
 
-            if (selectedProduct.isEmpty()) {
-                throw new EntityNotFoundException();
-            }
-
-            selectedProduct.ifPresent(value -> this.product = value);
-
-            return productDAO.deleteProduct(number);
-        } catch (EntityNotFoundException err) {
-            return Optional.empty();
+        if (selectedProduct.isEmpty()) {
+            throw new EntityNotFoundException();
         }
 
+        selectedProduct.ifPresent(value -> this.product = value);
 
+        return productDAO.deleteProduct(number);
     }
 
     public Optional<ProductResponseDto> createProductResponseDto() {
