@@ -4,7 +4,9 @@ import com.example.springboot.jpa.data.dto.ChangeProductNameDto;
 import com.example.springboot.jpa.data.dto.JsonDto;
 import com.example.springboot.jpa.data.dto.ProductDto;
 import com.example.springboot.jpa.data.dto.ProductResponseDto;
-import com.example.springboot.jpa.service.ProductService;
+import com.example.springboot.jpa.service.ProductServiceImpl;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +18,20 @@ import java.util.Optional;
 @RequestMapping("/product")
 public class ProductController {
 
-    private final ProductService productService;
+    private final ProductServiceImpl productService;
     private final HttpStatus successStatus = HttpStatus.OK;
     private final HttpStatus failedStatus = HttpStatus.BAD_REQUEST;
     private ProductResponseDto productResponseDto;
 
     @Autowired
-    ProductController(ProductService productService) {
+    ProductController(ProductServiceImpl productService) {
         this.productService = productService;
     }
 
+    @ApiOperation(value = "상품 정보 가져오기")
     @GetMapping("/{id}")
-    public ResponseEntity<JsonDto<ProductResponseDto>> getProduct(@PathVariable("id") Long number) {
+    public ResponseEntity<JsonDto<ProductResponseDto>> getProduct(
+            @ApiParam(value = "상품 아이디", required = true) @PathVariable("id") Long number) {
         Optional<ProductResponseDto> optionalProductResponseDto = productService.getProduct(number);
 
         if (optionalProductResponseDto.isEmpty()) {
@@ -41,8 +45,10 @@ public class ProductController {
                 new JsonDto<>(true, "get product", successStatus, productResponseDto));
     }
 
+    @ApiOperation(value = "상품 생성하기")
     @PostMapping()
-    public ResponseEntity<JsonDto<ProductResponseDto>> createProduct(@RequestBody ProductDto productDto) {
+    public ResponseEntity<JsonDto<ProductResponseDto>> createProduct(
+            @ApiParam(value = "상품 생성 정보", required = true) @RequestBody ProductDto productDto) {
         Optional<ProductResponseDto> optionalProductResponseDto = productService.saveProduct(productDto);
 
         if (optionalProductResponseDto.isEmpty()) {
@@ -56,9 +62,11 @@ public class ProductController {
                 new JsonDto<>(true, "create product", successStatus, productResponseDto));
     }
 
+    @ApiOperation(value = "상품 이름 수정하기")
     @PutMapping("/{id}")
     public ResponseEntity<JsonDto<ProductResponseDto>> changeProductName(
-            @RequestBody ChangeProductNameDto changeProductNameDto, @PathVariable("id") Long number) {
+            @ApiParam(value = "상품 이름 수정 정보", required = true) @RequestBody ChangeProductNameDto changeProductNameDto,
+            @ApiParam(value = "상품 아이디", required = true) @PathVariable("id") Long number) {
         String name = changeProductNameDto.getName();
 
         Optional<ProductResponseDto> optionalProductResponseDto = productService.changeProductName(number, name);
@@ -73,8 +81,10 @@ public class ProductController {
         return ResponseEntity.status(successStatus).body(new JsonDto<>(true, "change product name", successStatus, productResponseDto));
     }
 
+    @ApiOperation(value = "상품 삭제하기")
     @DeleteMapping("/{id}")
-    public ResponseEntity<JsonDto<ProductResponseDto>> deleteProduct(@PathVariable("id") Long number) {
+    public ResponseEntity<JsonDto<ProductResponseDto>> deleteProduct(
+            @ApiParam(value = "상품 아이디") @PathVariable("id") Long number) {
         Optional<Boolean> optionalDeleteResult = productService.deleteProduct(number);
 
         if (optionalDeleteResult.isEmpty()) {
