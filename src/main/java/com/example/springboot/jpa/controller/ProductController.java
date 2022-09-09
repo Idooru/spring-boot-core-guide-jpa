@@ -4,7 +4,7 @@ import com.example.springboot.jpa.data.dto.ChangeProductNameDto;
 import com.example.springboot.jpa.data.dto.JsonDto;
 import com.example.springboot.jpa.data.dto.ProductDto;
 import com.example.springboot.jpa.data.dto.ProductResponseDto;
-import com.example.springboot.jpa.service.ProductServiceImpl;
+import com.example.springboot.jpa.service.ProductService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +18,13 @@ import java.util.Optional;
 @RequestMapping("/product")
 public class ProductController {
 
-    private final ProductServiceImpl productService;
+    private final ProductService productService;
     private final HttpStatus successStatus = HttpStatus.OK;
     private final HttpStatus failedStatus = HttpStatus.BAD_REQUEST;
     private ProductResponseDto productResponseDto;
 
     @Autowired
-    ProductController(ProductServiceImpl productService) {
+    ProductController(ProductService productService) {
         this.productService = productService;
     }
 
