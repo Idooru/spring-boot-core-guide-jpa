@@ -1,6 +1,6 @@
 package com.example.springboot.jpa.service;
 
-import com.example.springboot.jpa.data.dao.ProductDAOImpl;
+import com.example.springboot.jpa.data.dao.ProductDAO;
 import com.example.springboot.jpa.data.dto.ProductDto;
 import com.example.springboot.jpa.data.dto.ProductResponseDto;
 import com.example.springboot.jpa.data.entity.Product;
@@ -14,11 +14,11 @@ import java.util.Optional;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-    private final ProductDAOImpl productDAO;
+    private final ProductDAO productDAO;
     private Product product;
 
     @Autowired
-    ProductServiceImpl(ProductDAOImpl productDAO) {
+    ProductServiceImpl(ProductDAO productDAO) {
         this.productDAO = productDAO;
     }
 
